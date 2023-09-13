@@ -11,4 +11,4 @@
              "is_adult_joe" [:and [:macro "is_joe"] [:macro "is_adult"]]})
 
 (def circular-macros {"is_good"   [:and [:macro "is_decent"] [:> [:field 4] 18]]
-                       "is_decent" [:and [:macro "is_good"] [:< [:field 5] 5]]})
+                      "is_decent" [:and [:macro "is_good"] [:< [:field 5] 5]]})
