@@ -46,11 +46,19 @@
 
 (declare expand-macros)
 
+(def ^:private ^:dynamic *being-expanded* #{})
+
 (defn- expand-macros*
   "Recursively expand macro clause."
   [[_ macro-id] macros]
   (assert (contains? macros macro-id) "Macro is not defined.")
-  (expand-macros (macros macro-id) macros))
+  (when (contains? *being-expanded* macro-id)
+    (throw (ex-info "Recursively defined macros not allowed."
+                    {:macro-id macro-id
+                     :being-expanded *being-expanded*
+                     :macros macros})))
+  (binding [*being-expanded* (conj *being-expanded* macro-id)]
+    (expand-macros (macros macro-id) macros)))
 
 (defn expand-macros
   "Walk where clause and expand macros."

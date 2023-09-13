@@ -39,4 +39,9 @@
   (is (= "SELECT * FROM data WHERE \"id\" <= 3 OR \"name\" = 'joe' AND \"age\" > 18;"
          (generate-sql :postgres test-util/fields {:where [:or
                                                            [:not [:> [:field 1] 3]]
-                                                           [:macro "is_adult_joe"]]} test-util/macros))))
+                                                           [:macro "is_adult_joe"]]} test-util/macros)))
+  (is (thrown? Exception
+               (generate-sql :postgres
+                             test-util/fields
+                             {:where [:or [:not [:> [:field 1] 3]] [:macro "is_good"]]}
+                             test-util/circular-macros))))
