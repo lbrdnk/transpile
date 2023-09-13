@@ -61,13 +61,13 @@
            (dialect/clause->sql :sql test-util/fields [:= [:field 4] [:field 1]])))
     (is (= "10 = 20"
            (dialect/clause->sql :sql test-util/fields [:= 10 20])))
-    (is (= "10 = 'asdf'"
-           (dialect/clause->sql :sql test-util/fields [:= 10 "asdf"])))
+    (is (= "\"name\" = 'asdf'"
+           (dialect/clause->sql :sql test-util/fields [:= [:field 2] "asdf"])))
     (is (= "'x' = 'asdf'"
            (dialect/clause->sql :sql test-util/fields [:= "x" "asdf"]))))
   (testing "= clause with multiple args"
-    (is (= "\"age\" IN (20, 'asdf', \"id\", NULL)"
-           (dialect/clause->sql :sql test-util/fields [:= [:field 4] 20 "asdf" [:field 1] nil])))))
+    (is (= "\"age\" IN (20, \"id\", NULL)"
+           (dialect/clause->sql :sql test-util/fields [:= [:field 4] 20 [:field 1] nil])))))
 
 (deftest !=-test
   (testing "!= clause with nil arg"
@@ -86,13 +86,13 @@
            (dialect/clause->sql :sql test-util/fields [:!= [:field 4] [:field 1]])))
     (is (= "10 <> 20"
            (dialect/clause->sql :sql test-util/fields [:!= 10 20])))
-    (is (= "10 <> 'asdf'"
-           (dialect/clause->sql :sql test-util/fields [:!= 10 "asdf"])))
+    (is (= "\"name\" <> 'asdf'"
+           (dialect/clause->sql :sql test-util/fields [:!= [:field 2] "asdf"])))
     (is (= "'x' <> 'asdf'"
            (dialect/clause->sql :sql test-util/fields [:!= "x" "asdf"]))))
   (testing "= clause with multiple args"
-    (is (= "\"age\" NOT IN (20, 'asdf', \"id\", NULL)"
-           (dialect/clause->sql :sql test-util/fields [:!= [:field 4] 20 "asdf" [:field 1] nil])))))
+    (is (= "\"age\" NOT IN (20, \"id\", NULL)"
+           (dialect/clause->sql :sql test-util/fields [:!= [:field 4] 20 [:field 1] nil])))))
 
 (deftest negate-not-empty-test
   (testing "Negate :not-empty"
@@ -151,13 +151,13 @@
            (dialect/clause->sql :sql test-util/fields [:not [:= [:field 4] [:field 1]]])))
     (is (= "10 <> 20"
            (dialect/clause->sql :sql test-util/fields [:not [:= 10 20]])))
-    (is (= "10 <> 'asdf'"
-           (dialect/clause->sql :sql test-util/fields [:not [:= 10 "asdf"]])))
+    (is (= "\"name\" <> 'asdf'"
+           (dialect/clause->sql :sql test-util/fields [:not [:= [:field 2] "asdf"]])))
     (is (= "'x' <> 'asdf'"
            (dialect/clause->sql :sql test-util/fields [:not [:= "x" "asdf"]]))))
   (testing "= clause with multiple args"
-    (is (= "\"age\" NOT IN (20, 'asdf', \"id\", NULL)"
-           (dialect/clause->sql :sql test-util/fields [:not [:= [:field 4] 20 "asdf" [:field 1] nil]])))))
+    (is (= "\"age\" NOT IN (20, \"id\", NULL)"
+           (dialect/clause->sql :sql test-util/fields [:not [:= [:field 4] 20 [:field 1] nil]])))))
 
 (deftest negate-!=-test
   (testing "= clause with nil arg"
@@ -176,51 +176,51 @@
            (dialect/clause->sql :sql test-util/fields [:not [:!= [:field 4] [:field 1]]])))
     (is (= "10 = 20"
            (dialect/clause->sql :sql test-util/fields [:not [:!= 10 20]])))
-    (is (= "10 = 'asdf'"
-           (dialect/clause->sql :sql test-util/fields [:not [:!= 10 "asdf"]])))
+    (is (= "\"name\" = 'asdf'"
+           (dialect/clause->sql :sql test-util/fields [:not [:!= [:field 2] "asdf"]])))
     (is (= "'x' = 'asdf'"
            (dialect/clause->sql :sql test-util/fields [:not [:!= "x" "asdf"]]))))
   (testing "= clause with multiple args"
-    (is (= "\"age\" IN (20, 'asdf', \"id\", NULL)"
-           (dialect/clause->sql :sql test-util/fields [:not [:!= [:field 4] 20 "asdf" [:field 1] nil]])))))
+    (is (= "\"age\" IN (20, \"id\", NULL)"
+           (dialect/clause->sql :sql test-util/fields [:not [:!= [:field 4] 20 [:field 1] nil]])))))
 
 (deftest and-or-test
   (testing "And operator"
-    (is (= "\"age\" IN (20, 'asdf', \"id\", NULL)"
+    (is (= "\"age\" IN (20, \"id\", NULL)"
            (dialect/clause->sql :sql test-util/fields [:and
-                                                       [:= [:field 4] 20 "asdf" [:field 1] nil]])))
-    (is (= "\"age\" IN (20, 'asdf', \"id\", NULL) AND \"id\" IS NOT NULL"
+                                                       [:= [:field 4] 20 [:field 1] nil]])))
+    (is (= "\"age\" IN (20, \"id\", NULL) AND \"id\" IS NOT NULL"
            (dialect/clause->sql :sql test-util/fields [:and 
-                                                       [:= [:field 4] 20 "asdf" [:field 1] nil]
+                                                       [:= [:field 4] 20 [:field 1] nil]
                                                        [:not-empty [:field 1]]])))
-    (is (= "\"age\" IN (20, 'asdf', \"id\", NULL) AND \"id\" IS NOT NULL AND \"name\" = 'joe'"
+    (is (= "\"age\" IN (20, \"id\", NULL) AND \"id\" IS NOT NULL AND \"name\" = 'joe'"
            (dialect/clause->sql :sql test-util/fields [:and
-                                                       [:= [:field 4] 20 "asdf" [:field 1] nil]
+                                                       [:= [:field 4] 20 [:field 1] nil]
                                                        [:not-empty [:field 1]]
                                                        [:= [:field 2] "joe"]]))))
   (testing "Or operator"
-    (is (= "\"age\" IN (20, 'asdf', \"id\", NULL)"
+    (is (= "\"age\" IN (20, \"id\", NULL)"
            (dialect/clause->sql :sql test-util/fields [:or
-                                                       [:= [:field 4] 20 "asdf" [:field 1] nil]])))
-    (is (= "\"age\" IN (20, 'asdf', \"id\", NULL) OR \"id\" IS NOT NULL"
+                                                       [:= [:field 4] 20 [:field 1] nil]])))
+    (is (= "\"age\" IN (20, \"id\", NULL) OR \"id\" IS NOT NULL"
            (dialect/clause->sql :sql test-util/fields [:or
-                                                       [:= [:field 4] 20 "asdf" [:field 1] nil]
+                                                       [:= [:field 4] 20 [:field 1] nil]
                                                        [:not-empty [:field 1]]])))
-    (is (= "\"age\" IN (20, 'asdf', \"id\", NULL) OR \"id\" IS NOT NULL OR \"name\" = 'joe'"
+    (is (= "\"age\" IN (20, \"id\", NULL) OR \"id\" IS NOT NULL OR \"name\" = 'joe'"
            (dialect/clause->sql :sql test-util/fields [:or
-                                                       [:= [:field 4] 20 "asdf" [:field 1] nil]
+                                                       [:= [:field 4] 20 [:field 1] nil]
                                                        [:not-empty [:field 1]]
                                                        [:= [:field 2] "joe"]]))))
   (testing "Combination of and with or operators"
-    (is (= "\"age\" IN (20, 'asdf', \"id\", NULL) AND (\"id\" IS NOT NULL OR \"name\" = 'joe')"
+    (is (= "\"age\" IN (20, \"id\", NULL) AND (\"id\" IS NOT NULL OR \"name\" = 'joe')"
            (dialect/clause->sql :sql test-util/fields [:and
-                                                       [:= [:field 4] 20 "asdf" [:field 1] nil]
+                                                       [:= [:field 4] 20 [:field 1] nil]
                                                        [:or
                                                         [:not-empty [:field 1]]
                                                         [:= [:field 2] "joe"]]])))
-    (is (= "\"age\" IN (20, 'asdf', \"id\", NULL) OR \"id\" IS NOT NULL AND \"name\" = 'joe'"
+    (is (= "\"age\" IN (20, \"id\", NULL) OR \"id\" IS NOT NULL AND \"name\" = 'joe'"
            (dialect/clause->sql :sql test-util/fields [:or
-                                                       [:= [:field 4] 20 "asdf" [:field 1] nil]
+                                                       [:= [:field 4] 20 [:field 1] nil]
                                                        [:and
                                                         [:not-empty [:field 1]]
                                                         [:= [:field 2] "joe"]]])))))
