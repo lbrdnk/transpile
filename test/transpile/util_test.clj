@@ -1,7 +1,8 @@
 (ns transpile.util-test
   (:require
    [clojure.test :refer [is deftest]]
-   [transpile.util :as util]))
+   [transpile.util :as util]
+   [transpile.test-util :as test-util]))
 
 (deftest negate-test
   (is (= [:is-empty [:field 3]]
@@ -26,3 +27,11 @@
 (comment
   (clojure.test/run-test negate-test)
   )
+
+(deftest expand-macros-test
+  (is (= [:> [:field 4] 18]
+         (util/expand-macros [:macro "is_adult"] test-util/macros)))
+  (is (= [:= [:field 2] "joe"]
+       (util/expand-macros [:macro "is_joe"] test-util/macros)))
+  (is (= [:and [:= [:field 2] "joe"] [:> [:field 4] 18]]
+         (util/expand-macros [:macro "is_adult_joe"] test-util/macros))))
