@@ -72,3 +72,34 @@
            (expand-macros* clause macros)
            clause))))
    where))
+
+(def simplify-clause* nil)
+(defmulti ^:private simplify-clause*
+  (fn [clause] (when (vector? clause) (clause 0)))
+  :default nil)
+
+(defmethod simplify-clause* nil
+  [clause]
+  clause)
+
+(defn simplify-and-or [clause type]
+  (reduce (fn [acc clause*]
+            (if (and (vector? clause*)
+                     (= type (first clause*)))
+              (into acc (rest clause*))
+              (conj acc clause*)))
+          [type]
+          (rest clause)))
+
+(defmethod simplify-clause* :and [clause] (simplify-and-or clause :and))
+
+(defmethod simplify-clause* :or [clause] (simplify-and-or clause :or))
+
+(defmethod simplify-clause* :not [clause]
+  (if (and (vector? (second clause))
+           (= :not (-> clause second first)))
+    (-> clause second second vec)
+    clause))
+
+(defn simplify-clause [clause]
+  (walk/postwalk simplify-clause* clause))

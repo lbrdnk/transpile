@@ -9,7 +9,11 @@
 
 (defn generate-sql
   ([dialect fields query]
-   (dialect/generate-sql dialect fields query))
+   (generate-sql dialect fields query nil))
   ([dialect fields query macros]
    (dialect/generate-sql dialect fields
-                         (update query :where #(util/expand-macros % macros)))))
+                         (as-> query $
+                             (if (some? macros)
+                               (update $ :where #(util/expand-macros % macros))
+                               $)
+                             (update $ :where util/simplify-clause)))))

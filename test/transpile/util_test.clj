@@ -45,3 +45,11 @@
                              test-util/fields
                              {:where [:or [:not [:> [:field 1] 3]] [:macro "is_good"]]}
                              test-util/circular-macros))))
+
+(deftest simplify-clause-test
+  (is (= [:and [:> 3 2] [:= "a" "b"] [:is-empty [:field 2]]]
+         (util/simplify-clause [:and [:and [:> 3 2] [:= "a" "b"]] [:is-empty [:field 2]]])))
+  (is (= [:or [:> 3 2] [:= "a" "b"] [:is-empty [:field 2]]]
+         (util/simplify-clause [:or [:or [:> 3 2] [:= "a" "b"]] [:is-empty [:field 2]]])))
+  (is (= [:> 3 2]
+         (util/simplify-clause [:not [:not [:> 3 2]]]))))
