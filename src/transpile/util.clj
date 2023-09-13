@@ -73,7 +73,6 @@
            clause))))
    where))
 
-(def simplify-clause* nil)
 (defmulti ^:private simplify-clause*
   (fn [clause] (when (vector? clause) (clause 0)))
   :default nil)
@@ -82,23 +81,23 @@
   [clause]
   clause)
 
-(defn simplify-and-or [clause type]
+(defn simplify-and-or [[type & args]]
   (reduce (fn [acc clause*]
             (if (and (vector? clause*)
                      (= type (first clause*)))
               (into acc (rest clause*))
               (conj acc clause*)))
           [type]
-          (rest clause)))
+          args))
 
-(defmethod simplify-clause* :and [clause] (simplify-and-or clause :and))
+(defmethod simplify-clause* :and [clause] (simplify-and-or clause))
 
-(defmethod simplify-clause* :or [clause] (simplify-and-or clause :or))
+(defmethod simplify-clause* :or [clause] (simplify-and-or clause))
 
-(defmethod simplify-clause* :not [clause]
-  (if (and (vector? (second clause))
-           (= :not (-> clause second first)))
-    (-> clause second second vec)
+(defmethod simplify-clause* :not [[_type inner-clause :as clause]]
+  (if (and (vector? inner-clause)
+           (= :not (inner-clause 0)))
+    (inner-clause 1)
     clause))
 
 (defn simplify-clause [clause]
