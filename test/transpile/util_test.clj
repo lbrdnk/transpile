@@ -1,6 +1,7 @@
 (ns transpile.util-test
   (:require
    [clojure.test :refer [is deftest]]
+   [transpile.core :refer [generate-sql]]
    [transpile.util :as util]
    [transpile.test-util :as test-util]))
 
@@ -34,4 +35,8 @@
   (is (= [:= [:field 2] "joe"]
        (util/expand-macros [:macro "is_joe"] test-util/macros)))
   (is (= [:and [:= [:field 2] "joe"] [:> [:field 4] 18]]
-         (util/expand-macros [:macro "is_adult_joe"] test-util/macros))))
+         (util/expand-macros [:macro "is_adult_joe"] test-util/macros)))
+  (is (= "SELECT * FROM data WHERE \"id\" <= 3 OR \"name\" = 'joe' AND \"age\" > 18;"
+         (generate-sql :postgres test-util/fields {:where [:or
+                                                           [:not [:> [:field 1] 3]]
+                                                           [:macro "is_adult_joe"]]} test-util/macros))))
