@@ -4,6 +4,10 @@
    [transpile.dialect :as dialect]
    [transpile.test-util :as test-util]))
 
+(deftest field-test
+  (is (= "\"name\""
+         (dialect/clause->sql :sql test-util/fields [:field 2]))))
+
 (deftest is-empty-test
   (is (= "NULL IS NULL"
          (dialect/clause->sql :sql nil [:is-empty nil])))
