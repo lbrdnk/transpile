@@ -94,4 +94,94 @@
     (is (= "\"age\" NOT IN (20, 'asdf', \"id\", NULL)"
            (dialect/clause->sql :sql test-util/fields [:!= [:field 4] 20 "asdf" [:field 1] nil])))))
 
+(deftest negate-not-empty-test
+  (testing "Negate :not-empty"
+    (is (= "NULL IS NULL"
+           (dialect/clause->sql :sql nil [:not [:not-empty nil]])))
+    (is (= "\"name\" IS NULL"
+           (dialect/clause->sql :sql test-util/fields [:not [:not-empty [:field 2]]])))
+    (is (= "10 IS NULL"
+           (dialect/clause->sql :sql test-util/fields [:not [:not-empty 10]])))
+    (is (= "'hello' IS NULL"
+           (dialect/clause->sql :sql test-util/fields [:not [:not-empty "hello"]])))))
+
+(deftest negate-is-empty-test
+  (testing "Negate :is-empty"
+    (is (= "NULL IS NOT NULL"
+           (dialect/clause->sql :sql nil [:not [:is-empty nil]])))
+    (is (= "\"name\" IS NOT NULL"
+           (dialect/clause->sql :sql test-util/fields [:not [:is-empty [:field 2]]])))
+    (is (= "10 IS NOT NULL"
+           (dialect/clause->sql :sql test-util/fields [:not [:is-empty 10]])))
+    (is (= "'hello' IS NOT NULL"
+           (dialect/clause->sql :sql test-util/fields [:not [:is-empty "hello"]])))))
+
+(deftest negate->-test
+  (testing "Negate >"
+    (is (= "\"id\" <= \"age\""
+           (dialect/clause->sql :sql test-util/fields [:not [:> [:field 1] [:field 4]]])))
+    (is (= "10 <= \"age\""
+           (dialect/clause->sql :sql test-util/fields [:not [:> 10 [:field 4]]])))
+    (is (= "10 <= 20"
+           (dialect/clause->sql :sql test-util/fields [:not [:> 10 20]])))))
+
+(deftest negate-<-test
+  (testing "Negate <"
+    (is (= "\"id\" >= \"age\""
+           (dialect/clause->sql :sql test-util/fields [:not [:< [:field 1] [:field 4]]])))
+    (is (= "10 >= \"age\""
+           (dialect/clause->sql :sql test-util/fields [:not [:< 10 [:field 4]]])))
+    (is (= "10 >= 20"
+           (dialect/clause->sql :sql test-util/fields [:not [:< 10 20]])))))
+
+(deftest negate-=-test
+  (testing "= clause with nil arg"
+    (is (= "NULL IS NOT NULL"
+           (dialect/clause->sql :sql test-util/fields [:not [:= nil nil]])))
+    (is (= "20 IS NOT NULL"
+           (dialect/clause->sql :sql test-util/fields [:not [:= nil 20]])))
+    (is (= "\"age\" IS NOT NULL"
+           (dialect/clause->sql :sql test-util/fields [:not [:= [:field 4] nil]])))
+    (is (= "'asdf' IS NOT NULL"
+           (dialect/clause->sql :sql test-util/fields [:not [:= nil "asdf"]]))))
+  (testing "= clause with 2 args"
+    (is (= "\"age\" <> 20"
+           (dialect/clause->sql :sql test-util/fields [:not [:= [:field 4] 20]])))
+    (is (= "\"age\" <> \"id\""
+           (dialect/clause->sql :sql test-util/fields [:not [:= [:field 4] [:field 1]]])))
+    (is (= "10 <> 20"
+           (dialect/clause->sql :sql test-util/fields [:not [:= 10 20]])))
+    (is (= "10 <> 'asdf'"
+           (dialect/clause->sql :sql test-util/fields [:not [:= 10 "asdf"]])))
+    (is (= "'x' <> 'asdf'"
+           (dialect/clause->sql :sql test-util/fields [:not [:= "x" "asdf"]]))))
+  (testing "= clause with multiple args"
+    (is (= "\"age\" NOT IN (20, 'asdf', \"id\", NULL)"
+           (dialect/clause->sql :sql test-util/fields [:not [:= [:field 4] 20 "asdf" [:field 1] nil]])))))
+
+(deftest negate-!=-test
+  (testing "= clause with nil arg"
+    (is (= "NULL IS NULL"
+           (dialect/clause->sql :sql test-util/fields [:not [:!= nil nil]])))
+    (is (= "20 IS NULL"
+           (dialect/clause->sql :sql test-util/fields [:not [:!= nil 20]])))
+    (is (= "\"age\" IS NULL"
+           (dialect/clause->sql :sql test-util/fields [:not [:!= [:field 4] nil]])))
+    (is (= "'asdf' IS NULL"
+           (dialect/clause->sql :sql test-util/fields [:not [:!= nil "asdf"]]))))
+  (testing "= clause with 2 args"
+    (is (= "\"age\" = 20"
+           (dialect/clause->sql :sql test-util/fields [:not [:!= [:field 4] 20]])))
+    (is (= "\"age\" = \"id\""
+           (dialect/clause->sql :sql test-util/fields [:not [:!= [:field 4] [:field 1]]])))
+    (is (= "10 = 20"
+           (dialect/clause->sql :sql test-util/fields [:not [:!= 10 20]])))
+    (is (= "10 = 'asdf'"
+           (dialect/clause->sql :sql test-util/fields [:not [:!= 10 "asdf"]])))
+    (is (= "'x' = 'asdf'"
+           (dialect/clause->sql :sql test-util/fields [:not [:!= "x" "asdf"]]))))
+  (testing "= clause with multiple args"
+    (is (= "\"age\" IN (20, 'asdf', \"id\", NULL)"
+           (dialect/clause->sql :sql test-util/fields [:not [:!= [:field 4] 20 "asdf" [:field 1] nil]])))))
+
 
